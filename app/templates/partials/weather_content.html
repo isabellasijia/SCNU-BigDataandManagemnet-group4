@@ -1,0 +1,179 @@
+<div class="grid grid-cols-12 gap-3 h-[calc(100vh-4rem)] p-3">
+    <!-- 左侧面板 -->
+    <div class="col-span-3 grid grid-rows-[auto,1fr] gap-3">
+        <!-- 当前天气 -->
+        <div class="bg-weather-card/30 rounded-xl p-3 group animate__animated animate__fadeIn">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <div class="text-sm text-gray-400">Now</div>
+                    <span class="badge badge-sm badge-primary">实时</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="btn btn-ghost btn-xs hover-float" data-tippy-content="刷新数据">
+                        <i class="ph-fill ph-arrows-clockwise"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="text-5xl font-light mb-1">
+                        {{ weather.main.temp|round|int }}°<span class="text-xl">c</span>
+                    </div>
+                    <div class="text-sm text-gray-400">{{ weather.weather[0].description }}</div>
+                </div>
+                <div class="bg-weather-card/50 rounded-full p-2">
+                    <img src="http://openweathermap.org/img/w/{{ weather.weather[0].icon }}.png" 
+                         alt="weather" 
+                         class="w-12 h-12">
+                </div>
+            </div>
+            <div class="mt-4 space-y-1 text-xs text-gray-400">
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-thermometer"></i>
+                    <span>体感温度: {{ weather.main.feels_like|round|int }}°C</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="ph-fill ph-map-pin"></i>
+                    <span>{{ weather.name }}, {{ weather.sys.country }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详细数据卡片 -->
+        <div class="bg-weather-card/30 rounded-xl p-4">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 湿度 -->
+                <div class="bg-weather-card/20 p-3 rounded-lg">
+                    <div class="flex items-center gap-2 text-sm mb-2">
+                        <i class="ph-fill ph-drop"></i>
+                        <span>湿度</span>
+                    </div>
+                    <div class="text-2xl">{{ weather.main.humidity }}%</div>
+                </div>
+                <!-- 气压 -->
+                <div class="bg-weather-card/20 p-3 rounded-lg">
+                    <div class="flex items-center gap-2 text-sm mb-2">
+                        <i class="ph-fill ph-gauge"></i>
+                        <span>气压</span>
+                    </div>
+                    <div class="text-2xl">{{ weather.main.pressure }}hPa</div>
+                </div>
+                <!-- 风速 -->
+                <div class="bg-weather-card/20 p-3 rounded-lg">
+                    <div class="flex items-center gap-2 text-sm mb-2">
+                        <i class="ph-fill ph-wind"></i>
+                        <span>风速</span>
+                    </div>
+                    <div class="text-2xl">{{ (weather.wind.speed * 3.6)|round(1) }}km/h</div>
+                </div>
+                <!-- 能见度 -->
+                <div class="bg-weather-card/20 p-3 rounded-lg">
+                    <div class="flex items-center gap-2 text-sm mb-2">
+                        <i class="ph-fill ph-eye"></i>
+                        <span>能见度</span>
+                    </div>
+                    <div class="text-2xl">{{ (weather.visibility / 1000)|round(1) }}km</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div class="col-span-9 space-y-3">
+        <!-- 日出日落信息 -->
+        <div class="bg-weather-card/30 rounded-xl p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <i class="ph-fill ph-sun text-yellow-500"></i>
+                        <span>日出 {{ weather.sys.sunrise|timestamp_to_time }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="ph-fill ph-moon"></i>
+                        <span>日落 {{ weather.sys.sunset|timestamp_to_time }}</span>
+                    </div>
+                </div>
+                <div class="text-sm text-gray-400">
+                    更新时间: {{ weather.dt|timestamp_to_time }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 温度范围 -->
+        <div class="bg-weather-card/30 rounded-xl p-4">
+            <div class="flex items-center justify-between mb-4">
+                <div class="text-sm">温度范围</div>
+                <div class="flex items-center gap-4">
+                    <span class="text-red-400">最高 {{ weather.main.temp_max|round|int }}°C</span>
+                    <span class="text-blue-400">最低 {{ weather.main.temp_min|round|int }}°C</span>
+                </div>
+            </div>
+            <div class="h-2 bg-weather-card rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-400 to-red-400"
+                     style="width: {{ ((weather.main.temp - weather.main.temp_min) / (weather.main.temp_max - weather.main.temp_min) * 100)|round }}%">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 天气数据对象
+const weatherData = {
+    coord: {{ weather.coord|tojson }},
+    weather: {{ weather.weather|tojson }},
+    main: {{ weather.main|tojson }},
+    visibility: {{ weather.visibility }},
+    wind: {{ weather.wind|tojson }},
+    clouds: {{ weather.clouds|tojson }},
+    rain: {{ weather.rain|default({})|tojson }},
+    dt: {{ weather.dt }},
+    sys: {{ weather.sys|tojson }},
+    name: "{{ weather.name }}",
+    country: "{{ weather.sys.country }}"
+};
+
+// 更新图表数据
+document.addEventListener('DOMContentLoaded', function() {
+    if (globalCharts) {
+        // 更新温度图表
+        if (globalCharts.tempChart) {
+            const tempData = {
+                current: weatherData.main.temp,
+                feels_like: weatherData.main.feels_like,
+                min: weatherData.main.temp_min,
+                max: weatherData.main.temp_max
+            };
+            
+            globalCharts.tempChart.setOption({
+                series: [{
+                    data: [tempData.min, tempData.current, tempData.feels_like, tempData.max]
+                }]
+            });
+        }
+
+        // 更新湿度和气压图表
+        if (globalCharts.humidityChart) {
+            globalCharts.humidityChart.setOption({
+                series: [{
+                    data: [weatherData.main.humidity]
+                }, {
+                    data: [weatherData.main.pressure]
+                }]
+            });
+        }
+    }
+});
+
+// 添加动画效果
+document.querySelectorAll('.animate__animated').forEach(element => {
+    element.style.opacity = '0';
+    element.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        element.style.opacity = '1';
+        element.style.transform = 'translateY(0)';
+        element.style.transition = 'all 0.5s ease-out';
+    }, 100);
+});
+</script> 

@@ -1,0 +1,76 @@
+site_name: Weather Dashboard
+site_description: A modern weather dashboard built with FastAPI
+site_author: Your Name
+
+repo_name: weather-dashboard
+repo_url: https://github.com/yourusername/weather-dashboard
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - User Guide:
+    - Getting Started: guide/getting-started.md
+    - Usage: guide/usage.md
+  - API:
+    - Overview: api/index.md
+    - Weather API: api/weather.md
+    - Reference:
+      - Summary: reference/SUMMARY.md
+      - Main: reference/app/main.md
+      - Weather API: reference/app/api/weather.md
+      - Weather Service: reference/app/services/weather.md
+  - Development:
+    - Overview: dev/index.md
+    - Contributing: dev/contributing.md
+
+plugins:
+  - search
+  - gen-files:
+      scripts:
+        - docs/gen_docs.py
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            show_source: true
+            show_root_heading: true
+            docstring_style: google
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/yourusername 

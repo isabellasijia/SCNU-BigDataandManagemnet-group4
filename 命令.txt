@@ -1,0 +1,55 @@
+# 开发环境设置
+# 创建虚拟环境
+python -m venv .venv
+
+# 激活虚拟环境
+# Windows:
+.venv\Scripts\activate
+# Linux/Mac:
+source .venv/bin/activate
+
+# 安装依赖
+pip install -r requirements.txt
+
+# 运行应用
+python run.py
+# 或者
+uvicorn app.main:app --reload --port 8000
+
+# 文档相关命令
+# 生成所有文档
+# 在项目根目录下运行：
+python -m docs.gen_docs
+
+# 启动文档服务器
+mkdocs serve
+
+# 构建文档站点
+mkdocs build
+
+# 测试相关命令
+# 运行测试
+tests/test_weather.py
+
+# 运行类型检查
+mypy app/
+
+# Git 相关命令
+# 初始化仓库
+git init
+
+# 添加文件
+git add .
+
+# 提交更改
+git commit -m "commit message"
+
+# 创建新分支
+git checkout -b feature/new-feature
+
+# Docker 相关命令（如果使用）
+# 构建镜像
+docker build -t weather-dashboard .
+
+# 运行容器
+docker run -p 8000:8000 weather-dashboard

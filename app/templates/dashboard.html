@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen max-h-screen flex flex-col p-2 md:p-4 overflow-hidden">
+    <!-- 顶部状态栏 -->
+    <div class="navbar bg-base-200 rounded-box shadow-lg h-16">
+        <div class="flex-1">
+            <span class="text-xl font-bold px-4">weather dashboard</span>
+        </div>
+        <div class="flex items-center gap-4 px-4">
+            <!-- 7天预报按钮 -->
+            <a href="/monthly" class="btn btn-sm btn-outline btn-primary">
+                <i class="ph-fill ph-calendar mr-1"></i>
+                <span class="md:inline">7-Day Forecast</span>
+            </a>
+            
+            <!-- 桌面端搜索框 -->
+            <div class="form-control hidden md:block">
+                <div class="join">
+                    <input type="text" 
+                           placeholder="please enter the city name"
+                           class="input input-bordered input-sm join-item w-64"
+                           id="citySearch">
+                    <button class="btn btn-sm btn-primary join-item" id="searchBtn">
+                        <i class="ph-fill ph-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 移动端搜索按钮 -->
+            <button class="btn btn-ghost btn-circle md:hidden" onclick="toggleSearch()">
+                <i class="ph-fill ph-magnifying-glass text-xl"></i>
+                <span class="md:inline">search</span>
+            </button>
+            
+            <!-- 更新时间 -->
+            <div class="text-sm opacity-70">
+                update time: <span id="update-time">--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端搜索栏 -->
+    <div id="mobileSearch" class="hidden md:hidden">
+        <div class="p-2">
+            <div class="join w-full">
+                <input type="text" 
+                       placeholder="please enter the city name"
+                       class="input input-bordered join-item w-full"
+                       id="mobileCitySearch">
+                <button class="btn join-item btn-primary" id="mobileSearchBtn">
+                    <i class="ph-fill ph-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 -->
+    <div class="flex-1 flex flex-col gap-2 md:gap-4 mt-2 md:mt-4 min-h-0">
+        <!-- 数据概览卡片 -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 h-24">
+            <div class="stat bg-base-200 shadow-xl rounded-box p-2 md:p-4">
+                <div class="stat-figure text-primary">
+                    <i class="ph-fill ph-thermometer text-2xl md:text-3xl"></i>
+                </div>
+                <div class="stat-title text-xs md:text-sm">current temperature</div>
+                <div class="stat-value text-primary text-lg md:text-2xl" id="current-temp">--°C</div>
+                <div class="stat-desc text-xs" id="weather-desc">--</div>
+            </div>
+                
+            <div class="stat bg-base-200 shadow-xl rounded-box p-2 md:p-4">
+                <div class="stat-figure text-secondary">
+                    <i class="ph-fill ph-drop text-2xl md:text-3xl"></i>
+                </div>
+                <div class="stat-title text-xs md:text-sm">humidity</div>
+                <div class="stat-value text-secondary text-lg md:text-2xl" id="humidity">--%</div>
+                <div class="stat-desc text-xs">relative humidity</div>
+            </div>
+            
+            <div class="stat bg-base-200 shadow-xl rounded-box p-2 md:p-4">
+                <div class="stat-figure text-accent">
+                    <i class="ph-fill ph-wind text-2xl md:text-3xl"></i>
+                </div>
+                <div class="stat-title text-xs md:text-sm">wind speed</div>
+                <div class="stat-value text-accent text-lg md:text-2xl" id="wind-speed">--</div>
+                <div class="stat-desc text-xs" id="wind-direction">--°</div>
+            </div>
+            
+            <div class="stat bg-base-200 shadow-xl rounded-box p-2 md:p-4">
+                <div class="stat-figure text-info">
+                    <i class="ph-fill ph-eye text-2xl md:text-3xl"></i>
+                </div>
+                <div class="stat-title text-xs md:text-sm">visibility</div>
+                <div class="stat-value text-info text-lg md:text-2xl" id="visibility">--</div>
+                <div class="stat-desc text-xs">kilometer</div>
+            </div>
+        </div>
+
+        <!-- 图表和详情区域 -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-2 md:gap-4 min-h-0" style="margin-top: 60px">
+            <!-- 左侧温度趋势图 -->
+            <div class="lg:col-span-3 card bg-base-200 shadow-xl">
+                <div class="card-body p-2 md:p-4">
+                    <h2 class="card-title text-sm md:text-base mb-2">
+                        <i class="ph-fill ph-chart-line text-primary"></i>
+                        temperature trend
+                    </h2>
+                <div class="flex-1 min-h-0" id="temp-chart"></div>
+        </div>
+    </div>
+
+            <!-- 右侧信息卡片 -->
+            <div class="grid grid-cols-3 lg:grid-cols-1 gap-2 md:gap-4">
+                <!-- 日出日落卡片 -->
+                <div class="card bg-base-200 shadow-xl">
+                    <div class="card-body p-2 md:p-4">
+                        <h2 class="card-title text-xs md:text-sm">
+                            <i class="ph-fill ph-sun-horizon text-warning"></i>
+                            sunrise and sunset
+                        </h2>
+                        <div class="flex justify-between items-center mt-1">
+                            <div class="flex items-center gap-1 md:gap-2">
+                                <i class="ph-fill ph-sun text-warning text-lg md:text-xl"></i>
+                                <span id="sunrise" class="text-xs md:text-sm">--:--</span>
+                </div>
+                            <div class="flex items-center gap-1 md:gap-2">
+                                <i class="ph-fill ph-moon text-lg md:text-xl"></i>
+                                <span id="sunset" class="text-xs md:text-sm">--:--</span>
+            </div>
+        </div>
+                        <div class="w-full h-1 bg-base-300 rounded-full mt-1 overflow-hidden">
+                            <div class="h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-blue-600" 
+                                 id="daylight-progress"></div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- 气压卡片 -->
+                <div class="card bg-base-200 shadow-xl">
+                    <div class="card-body p-2 md:p-4">
+                        <h2 class="card-title text-xs md:text-sm">
+                            <i class="ph-fill ph-gauge text-success"></i>
+                            air pressure
+                        </h2>
+                        <div class="flex items-center justify-center flex-1">
+                            <div class="radial-progress text-success text-sm md:text-base" 
+                                 style="--size:4rem; --value:70;" id="pressure-gauge">
+                                <span id="pressure" class="text-xs md:text-sm">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+                <!-- 降水量卡片 -->
+                <div class="card bg-base-200 shadow-xl">
+                    <div class="card-body p-2 md:p-4">
+                        <h2 class="card-title text-xs md:text-sm">
+                            <i class="ph-fill ph-cloud-rain text-info"></i>
+                            precipitation
+                        </h2>
+                        <div class="flex justify-between items-center mt-1">
+                            <div class="text-lg md:text-xl font-light" id="rain">--</div>
+                            <div class="text-xs md:text-sm opacity-70">mm/h</div>
+                    </div>
+                        <div class="divider my-1"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs md:text-sm opacity-70">cloud cover</span>
+                            <span id="clouds" class="text-xs md:text-sm">--%</span>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+// 修改 utils 对象，只保留数据处理函数
+const utils = {
+    kelvinToCelsius(kelvin) {
+        return Math.round(kelvin - 273.15);
+    },
+    formatTime(timestamp) {
+        return new Date(timestamp * 1000).toLocaleTimeString('zh-CN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+    formatWindSpeed(speed) {
+        return (speed * 3.6).toFixed(1);
+    }
+};
+
+// 修改获取数据的函数
+async function fetchWeatherData(city = 'Beijing') {
+    try {
+        const response = await fetch(`/api/weather/${encodeURIComponent(city)}`);
+        if (!response.ok) {
+            throw new Error('Weather data fetch failed');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching weather data:', error);
+        return null;
+    }
+}
+
+// 初始化温度趋势图
+let tempChart = null;
+
+function initTempChart() {
+    const chartDom = document.getElementById('temp-chart');
+    tempChart = echarts.init(chartDom);
+    
+    const resizeObserver = new ResizeObserver(() => {
+        tempChart.resize();
+    });
+    
+    resizeObserver.observe(chartDom);
+    
+    const option = {
+        tooltip: {
+            trigger: 'axis',
+            formatter: '{b}: {c}°C'
+        },
+        grid: {
+            top: '5%',
+            left: '3%',
+            right: '4%',
+            bottom: '5%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['now', 'body perception', 'lower', 'higher']
+        },
+        yAxis: {
+            type: 'value',
+            name: 'temperature (°C)',
+            axisLabel: {
+                formatter: '{value}°C'
+            }
+        },
+        series: [
+            {
+            name: 'temperature',
+            type: 'line',
+            smooth: true,
+                data: [0, 0, 0, 0], // 初始化为默认值
+            areaStyle: {
+                    opacity: 0.3,
+                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(128, 255, 165)' },
+                        { offset: 1, color: 'rgba(1, 191, 236)' }
+                    ])
+                },
+                lineStyle: {
+                    width: 3,
+                    color: '#01bfec'
+                },
+                itemStyle: {
+                    borderWidth: 3,
+                    color: '#01bfec'
+                }
+            }
+        ]
+    };
+    
+    tempChart.setOption(option);
+}
+
+// 更新页面数据
+async function updateWeatherDisplay(weatherData) {
+    if (!weatherData) return;
+
+    // 添加位置显示
+    const locationName = weatherData.location 
+        ? `${weatherData.location.name}, ${weatherData.location.country}`
+        : weatherData.name;
+    
+    document.querySelector('.navbar .text-xl').textContent = 
+        `${locationName}`;
+
+    // 更新基本信息
+    document.getElementById('current-temp').innerHTML = 
+        `${utils.kelvinToCelsius(weatherData.main.temp)}°<span class="text-xl">c</span>`;
+    document.getElementById('weather-desc').textContent = 
+        weatherData.weather[0].description;
+    document.getElementById('humidity').textContent = `${weatherData.main.humidity}%`;
+    document.getElementById('wind-speed').textContent = 
+        `${utils.formatWindSpeed(weatherData.wind.speed)}`;
+    document.getElementById('wind-direction').textContent = `${weatherData.wind.deg}°`;
+    document.getElementById('visibility').textContent = 
+        `${(weatherData.visibility / 1000).toFixed(1)}`;
+
+    // 更新气压
+    const pressureGauge = document.getElementById('pressure-gauge');
+    const pressurePercentage = (weatherData.main.pressure / 1100) * 100;
+    pressureGauge.style.setProperty('--value', pressurePercentage);
+    document.getElementById('pressure').textContent = weatherData.main.pressure;
+
+    // 更新降水量和云量
+    document.getElementById('rain').textContent = 
+        `${weatherData.rain?.["1h"] || 0}`;
+    document.getElementById('clouds').textContent = 
+        `${weatherData.clouds.all}%`;
+
+    // 更新日出日落时间
+    document.getElementById('sunrise').textContent = 
+        utils.formatTime(weatherData.sys.sunrise);
+    document.getElementById('sunset').textContent = 
+        utils.formatTime(weatherData.sys.sunset);
+
+    // 计算并更新日照进度
+    const now = weatherData.dt;
+    const sunrise = weatherData.sys.sunrise;
+    const sunset = weatherData.sys.sunset;
+    const dayProgress = ((now - sunrise) / (sunset - sunrise)) * 100;
+    document.getElementById('daylight-progress').style.width = 
+        `${Math.min(Math.max(dayProgress, 0), 100)}%`;
+
+    // 更新图表数据
+    if (tempChart) {
+        tempChart.setOption({
+            series: [{
+                data: [
+                    utils.kelvinToCelsius(weatherData.main.temp),
+                    utils.kelvinToCelsius(weatherData.main.feels_like),
+                    utils.kelvinToCelsius(weatherData.main.temp_min),
+                    utils.kelvinToCelsius(weatherData.main.temp_max)
+                ]
+            }]
+        });
+    }
+
+    // 更新最后更新时间
+    document.getElementById('update-time').textContent = 
+        utils.formatTime(weatherData.dt);
+}
+
+// 初始化页面
+async function initDashboard() {
+    // 先初始化图表
+    initTempChart();
+    
+    // 然后获取并显示天气数据
+    const weatherData = await fetchWeatherData();
+    if (weatherData) {
+        updateWeatherDisplay(weatherData);
+        
+        // 设置定时刷新（每5分钟）
+        setInterval(async () => {
+            const newData = await fetchWeatherData();
+            if (newData) {
+                updateWeatherDisplay(newData);
+            }
+        }, 5 * 60 * 1000);
+    }
+}
+
+// 搜索处理函数
+async function handleSearch(city) {
+    try {
+        const response = await fetch(`/api/weather/${encodeURIComponent(city)}`);
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to fetch weather data');
+        }
+        
+        updateWeatherDisplay(data);
+    } catch (error) {
+        console.error('Search failed:', error);
+        alert('城市未找到或发生错误，请检查城市名称（使用英文）');
+    }
+}
+
+// 页面加载完成后的初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化仪表盘
+    initDashboard();
+    
+    // 添加搜索事件监听
+    const searchInput = document.getElementById('citySearch');
+    const searchBtn = document.getElementById('searchBtn');
+    
+    if (searchInput && searchBtn) {
+        // 点击搜索按钮
+        searchBtn.addEventListener('click', () => {
+            const city = searchInput.value.trim();
+            if (city) {
+                handleSearch(city);
+                searchInput.value = '';
+            }
+        });
+        
+        // 回车键搜索
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const city = searchInput.value.trim();
+                if (city) {
+                    handleSearch(city);
+                    searchInput.value = '';
+                }
+            }
+        });
+    }
+
+    // 添加移动端搜索栏切换功能
+    window.toggleSearch = function() {
+        const searchBar = document.getElementById('mobileSearch');
+        if (searchBar.classList.contains('hidden')) {
+            searchBar.classList.remove('hidden');
+            setTimeout(() => {
+                searchBar.classList.add('show');
+                document.getElementById('mobileCitySearch').focus();
+            }, 10);
+        } else {
+            searchBar.classList.remove('show');
+            setTimeout(() => {
+                searchBar.classList.add('hidden');
+            }, 300);
+        }
+    }
+
+    // 添加移动端搜索处理
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileSearchInput = document.getElementById('mobileCitySearch');
+    
+    mobileSearchBtn?.addEventListener('click', () => {
+        const city = mobileSearchInput.value.trim();
+        if (city) {
+            handleSearch(city);
+            mobileSearchInput.value = '';
+            toggleSearch(); // 搜索后隐藏搜索栏
+        }
+    });
+    
+    mobileSearchInput?.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+            const city = mobileSearchInput.value.trim();
+            if (city) {
+                handleSearch(city);
+                mobileSearchInput.value = '';
+                toggleSearch(); // 搜索后隐藏搜索栏
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

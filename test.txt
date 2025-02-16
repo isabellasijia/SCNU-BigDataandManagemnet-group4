@@ -1,0 +1,38 @@
+from flask import jsonify
+from .services.weather import WeatherService
+
+weather_service = WeatherService()
+
+@app.route('/api/weather/location')
+def get_weather_by_location():
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    
+    if not lat or not lon:
+        return jsonify({"success": False, "message": "缺少经纬度参数"})
+        
+    weather_data = weather_service.get_weather_by_location(lat, lon)
+    if not weather_data:
+        return jsonify({"success": False, "message": "获取天气数据失败"})
+        
+    return jsonify({
+        "success": True,
+        "data": weather_data,
+        "html": render_template('weather_content.html', weather=weather_data)
+    })
+
+@app.route('/api/weather/city')
+def get_weather_by_city():
+    city = request.args.get('name')
+    if not city:
+        return jsonify({"success": False, "message": "缺少城市名称"})
+        
+    weather_data = weather_service.get_weather_by_city(city)
+    if not weather_data:
+        return jsonify({"success": False, "message": "获取天气数据失败"})
+        
+    return jsonify({
+        "success": True,
+        "data": weather_data,
+        "html": render_template('weather_content.html', weather=weather_data)
+    }) 

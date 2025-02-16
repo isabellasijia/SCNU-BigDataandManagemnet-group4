@@ -1,0 +1,71 @@
+<div class="card bg-base-200 shadow-xl" 
+     hx-target="this"
+     hx-swap="outerHTML">
+    <div class="card-body">
+        <div class="flex justify-between items-start">
+            <h2 class="card-title text-xl">{{ city }}</h2>
+            <button class="btn btn-sm btn-circle btn-ghost"
+                    onclick="this.closest('.card').remove()">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        
+        <div class="divider my-2"></div>
+        
+        <div class="grid grid-cols-2 gap-4">
+            <!-- 温度信息 -->
+            <div class="flex items-center gap-2">
+                <i class="ph ph-thermometer text-xl"></i>
+                <div>
+                    <div class="text-sm opacity-70">temperature</div>
+                    <div class="font-semibold" id="temp-{{ city }}">
+                        <span class="loading loading-spinner loading-sm"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 湿度信息 -->
+            <div class="flex items-center gap-2">
+                <i class="ph ph-drop text-xl"></i>
+                <div>
+                    <div class="text-sm opacity-70">humidity</div>
+                    <div class="font-semibold" id="humidity-{{ city }}">
+                        <span class="loading loading-spinner loading-sm"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 风速信息 -->
+            <div class="flex items-center gap-2">
+                <i class="ph ph-wind text-xl"></i>
+                <div>
+                    <div class="text-sm opacity-70">wind speed</div>
+                    <div class="font-semibold" id="wind-{{ city }}">
+                        <span class="loading loading-spinner loading-sm"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 天气状况 -->
+            <div class="flex items-center gap-2">
+                <i class="ph ph-cloud-sun text-xl"></i>
+                <div>
+                    <div class="text-sm opacity-70">weather</div>
+                    <div class="font-semibold" id="weather-{{ city }}">
+                        <span class="loading loading-spinner loading-sm"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-actions justify-end mt-4">
+            <button class="btn btn-sm btn-primary"
+                    hx-get="/api/weather/{{ city }}"
+                    hx-trigger="click"
+                    hx-target="closest .card"
+                    hx-swap="outerHTML">
+                刷新
+            </button>
+        </div>
+    </div>
+</div> 

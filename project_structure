@@ -1,0 +1,23 @@
+weather_dashboard/
+├── app/
+│   ├── __init__.py
+│   ├── main.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── weather.py
+│   ├── templates/
+│   │   ├── base.html
+│   │   └── dashboard.html
+│   └── static/
+│       ├── css/
+│       │   └── styles.css
+│       └── js/
+│           └── dashboard.js
+├── tests/
+│   ├── __init__.py
+│   └── test_weather.py
+├── docs/
+│   ├── user_manual.md
+│   └── api_docs.md
+├── requirements.txt
+└── README.md 

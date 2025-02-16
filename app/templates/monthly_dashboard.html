@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen max-h-screen flex flex-col p-2 md:p-4 overflow-hidden">
+    <!-- 顶部导航栏 - 移动端优化 -->
+    <div class="navbar bg-base-200 rounded-box shadow-lg">
+        <div class="flex justify-between items-center w-full px-2">
+            <!-- 左侧：返回按钮 -->
+            <a href="/" class="btn btn-ghost btn-circle">
+                <i class="ph-fill ph-arrow-left text-xl"></i>
+                <span>back</span>
+            </a>
+            
+            <!-- 中间：标题 -->
+            <div class="text-center">
+                <span class="text-lg font-bold">7-Day Forecast</span>
+            </div>
+            
+            <!-- 右侧：搜索按钮 -->
+            <button class="btn btn-ghost btn-circle" onclick="toggleSearch()">
+                <i class="ph-fill ph-magnifying-glass text-xl"></i>
+                <span>search</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 移动端搜索栏 (默认隐藏) -->
+    <div id="mobileSearch" class="hidden">
+        <div class="p-2">
+            <div class="join w-full">
+                <input type="text" 
+                       placeholder="Enter city name"
+                       class="input input-bordered join-item w-full"
+                       id="mobileCitySearch">
+                <button class="btn join-item btn-primary" id="mobileSearchBtn">
+                    <i class="ph-fill ph-magnifying-glass"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 桌面端搜索栏 -->
+    <div class="hidden md:block mt-4">
+        <div class="px-2">
+            <div class="flex gap-2">
+                <a href="/" class="btn btn-outline btn-primary">
+                    <i class="ph-fill ph-arrow-left mr-1"></i>
+                    Back
+                </a>
+                <div class="join flex-1">
+                    <input type="text" 
+                           placeholder="Enter city name"
+                           class="input input-bordered join-item w-full"
+                           id="citySearch">
+                    <button class="btn join-item btn-primary" id="searchBtn">
+                        <i class="ph-fill ph-magnifying-glass"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要内容区域 - 移动端优化 -->
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4 overflow-hidden">
+        <!-- 温度趋势图 -->
+        <div class="lg:col-span-3 card bg-base-200 shadow-xl overflow-hidden">
+            <div class="card-body p-2 md:p-4">
+                <h2 class="card-title text-sm md:text-base">
+                    <i class="ph-fill ph-chart-line text-primary"></i>
+                    Temperature Trend
+                </h2>
+                <div class="h-[250px] md:h-[400px]" id="temp-trend-chart"></div>
+            </div>
+        </div>
+
+        <!-- 信息面板 - 移动端使用水平滚动 -->
+        <div class="lg:block">
+            <div class="flex lg:grid lg:grid-cols-1 gap-4 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0">
+                <!-- 温度统计卡片 -->
+                <div class="card bg-base-200 shadow-xl min-w-[280px] lg:min-w-0">
+                    <div class="card-body p-3 md:p-4">
+                        <h3 class="card-title text-sm">Temperature</h3>
+                        <div class="stats stats-vertical shadow w-full">
+                            <div class="stat p-2">
+                                <div class="stat-title text-xs">High</div>
+                                <div class="stat-value text-xl md:text-2xl text-primary" id="avg-high">--°C</div>
+                            </div>
+                            <div class="stat p-2">
+                                <div class="stat-title text-xs">Low</div>
+                                <div class="stat-value text-xl md:text-2xl text-secondary" id="avg-low">--°C</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 降水量图表卡片 -->
+                <div class="card bg-base-200 shadow-xl min-w-[280px] lg:min-w-0">
+                    <div class="card-body p-3 md:p-4">
+                        <h3 class="card-title text-sm">Precipitation</h3>
+                        <div class="h-[150px] md:h-[200px]" id="rain-chart"></div>
+                    </div>
+                </div>
+
+                <!-- 每日详情卡片 -->
+                <div class="card bg-base-200 shadow-xl min-w-[280px] lg:min-w-0">
+                    <div class="card-body p-3 md:p-4">
+                        <h3 class="card-title text-sm sticky top-0 bg-base-200 z-10">Daily Details</h3>
+                        <div class="overflow-y-auto max-h-[200px] md:max-h-[300px]" id="daily-details">
+                            <!-- 动态内容 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<script>
+// Utils
+const utils = {
+    kelvinToCelsius(kelvin) {
+        return Math.round(kelvin - 273.15);
+    },
+    formatDate(timestamp) {
+        return new Date(timestamp * 1000).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+        });
+    }
+};
+
+// Initialize Charts
+let tempTrendChart = null;
+let rainChart = null;
+
+function initCharts() {
+    // Temperature Trend Chart
+    const tempChartDom = document.getElementById('temp-trend-chart');
+    tempTrendChart = echarts.init(tempChartDom);
+    
+    // Rain Chart
+    const rainChartDom = document.getElementById('rain-chart');
+    rainChart = echarts.init(rainChartDom);
+}
+
+// Update Dashboard
+async function updateDashboard(data) {
+    if (!data) return;
+
+    const dates = data.list.map(item => utils.formatDate(item.dt));
+    const maxTemps = data.list.map(item => utils.kelvinToCelsius(item.temp.max));
+    const minTemps = data.list.map(item => utils.kelvinToCelsius(item.temp.min));
+    const rainData = data.list.map(item => item.rain || 0);
+
+    // Update Temperature Trend Chart
+    tempTrendChart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            formatter: function(params) {
+                const date = dates[params[0].dataIndex];
+                return `${date}<br/>
+                        Max: ${params[0].data}°C<br/>
+                        Min: ${params[1].data}°C`;
+            }
+        },
+        legend: {
+            data: ['Max Temp', 'Min Temp']
+        },
+        xAxis: {
+            type: 'category',
+            data: dates,
+            axisLabel: {
+                rotate: 45
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Temperature (°C)',
+            axisLabel: {
+                formatter: '{value}°C'
+            }
+        },
+        series: [
+            {
+                name: 'Max Temp',
+                type: 'line',
+                data: maxTemps,
+                smooth: true,
+                itemStyle: {
+                    color: '#ff6b6b'
+                }
+            },
+            {
+                name: 'Min Temp',
+                type: 'line',
+                data: minTemps,
+                smooth: true,
+                itemStyle: {
+                    color: '#4dabf7'
+                }
+            }
+        ]
+    });
+
+    // Update Rain Chart
+    rainChart.setOption({
+        tooltip: {
+            trigger: 'axis',
+            formatter: '{b}: {c} mm'
+        },
+        xAxis: {
+            type: 'category',
+            data: dates,
+            axisLabel: {
+                rotate: 45
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: 'Precipitation (mm)'
+        },
+        series: [
+            {
+                type: 'bar',
+                data: rainData,
+                itemStyle: {
+                    color: '#74c0fc'
+                }
+            }
+        ]
+    });
+
+    // Update Statistics
+    const avgHigh = maxTemps.reduce((a, b) => a + b) / maxTemps.length;
+    const avgLow = minTemps.reduce((a, b) => a + b) / minTemps.length;
+    
+    document.getElementById('avg-high').textContent = `${avgHigh.toFixed(1)}°C`;
+    document.getElementById('avg-low').textContent = `${avgLow.toFixed(1)}°C`;
+
+    // Update Daily Details
+    const detailsContainer = document.getElementById('daily-details');
+    detailsContainer.innerHTML = data.list.map(day => `
+        <div class="flex items-center justify-between p-2 border-b border-base-300">
+            <div class="flex items-center gap-2">
+                <img src="https://openweathermap.org/img/w/${day.weather[0].icon}.png" 
+                     alt="${day.weather[0].description}"
+                     class="w-8 h-8">
+                <div>
+                    <div class="font-bold">${utils.formatDate(day.dt)}</div>
+                    <div class="text-xs">${day.weather[0].description}</div>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm">
+                    <span class="text-error">${utils.kelvinToCelsius(day.temp.max)}°</span> / 
+                    <span class="text-info">${utils.kelvinToCelsius(day.temp.min)}°</span>
+                </div>
+                <div class="text-xs">
+                    <i class="ph-fill ph-drop"></i> ${day.humidity}%
+                    <i class="ph-fill ph-wind ml-2"></i> ${day.speed.toFixed(1)} m/s
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+// 移动端搜索栏切换
+function toggleSearch() {
+    const searchBar = document.getElementById('mobileSearch');
+    if (searchBar.classList.contains('hidden')) {
+        searchBar.classList.remove('hidden');
+        // 使用 setTimeout 确保过渡动画生效
+        setTimeout(() => {
+            searchBar.classList.add('show');
+            document.getElementById('mobileCitySearch').focus();
+        }, 10);
+    } else {
+        searchBar.classList.remove('show');
+        // 等待过渡动画完成后隐藏
+        setTimeout(() => {
+            searchBar.classList.add('hidden');
+        }, 300);
+    }
+}
+
+// 图表响应式处理
+function handleResize() {
+    if (tempTrendChart) {
+        tempTrendChart.resize();
+    }
+    if (rainChart) {
+        rainChart.resize();
+    }
+}
+
+// 监听窗口大小变化
+window.addEventListener('resize', handleResize);
+
+// 初始化
+document.addEventListener('DOMContentLoaded', function() {
+    initCharts();
+    handleResize();
+    
+    // 桌面端搜索
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('citySearch');
+    
+    // 移动端搜索
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileSearchInput = document.getElementById('mobileCitySearch');
+    
+    async function handleSearch(input) {
+        const city = input.value.trim();
+        if (!city) return;
+        
+        try {
+            const response = await fetch(`/api/weather/monthly/${city}`);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.detail || 'Failed to fetch forecast');
+            }
+            
+            updateDashboard(data);
+            input.value = '';
+            
+            // 如果是移动端，隐藏搜索栏
+            if (input.id === 'mobileCitySearch') {
+                document.getElementById('mobileSearch').classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('Search failed:', error);
+            alert(error.message || 'Failed to fetch forecast data. Please try again.');
+        }
+    }
+    
+    // 绑定搜索事件
+    searchBtn?.addEventListener('click', () => handleSearch(searchInput));
+    mobileSearchBtn?.addEventListener('click', () => handleSearch(mobileSearchInput));
+    
+    searchInput?.addEventListener('keypress', e => {
+        if (e.key === 'Enter') handleSearch(searchInput);
+    });
+    
+    mobileSearchInput?.addEventListener('keypress', e => {
+        if (e.key === 'Enter') handleSearch(mobileSearchInput);
+    });
+});
+</script>
+{% endblock %} 

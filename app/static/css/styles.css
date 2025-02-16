@@ -1,0 +1,595 @@
+:root {
+    --primary-color: #1a73e8;
+    --secondary-color: #4285f4;
+    --background-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-primary: #202124;
+    --text-secondary: #5f6368;
+    --border-radius: 12px;
+    --shadow: 0 2px 6px rgba(0,0,0,0.08);
+    --loading-spinner-color: #4dabf7;
+    --card-padding: 1rem;
+}
+
+@media (min-width: 768px) {
+    :root {
+        --card-padding: 1.5rem;
+    }
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.search-container {
+    max-width: 600px;
+    margin: 1.5rem auto;
+    position: relative;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.search-container input:focus {
+    outline: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.dashboard-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+}
+
+.weather-panel {
+    grid-column: span 12;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+}
+
+.current-weather {
+    grid-column: span 4;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.forecast {
+    grid-column: span 8;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.main-info {
+    text-align: center;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f5f7fa, #e4e7eb);
+    border-radius: var(--border-radius);
+}
+
+.temperature {
+    font-size: 4rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    margin: 1rem 0;
+}
+
+.weather-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.meta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.meta-item {
+    background: rgba(26, 115, 232, 0.05);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta-item i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 250px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .current-weather, .forecast {
+        grid-column: span 6;
+    }
+}
+
+@media (max-width: 768px) {
+    .current-weather, .forecast {
+        grid-column: span 12;
+    }
+    
+    .dashboard-container {
+        margin: 1rem auto;
+    }
+    
+    /* 导航栏优化 */
+    .navbar {
+        padding: 0.5rem;
+        height: auto !important;
+    }
+    
+    /* 状态卡片网格优化 */
+    .grid-cols-2 {
+        gap: 0.5rem;
+    }
+    
+    .stat {
+        padding: 0.75rem !important;
+        min-height: 100px;
+    }
+    
+    /* 图标大小调整 */
+    .stat-figure i {
+        font-size: 1.25rem !important;
+    }
+    
+    /* 文字大小调整 */
+    .stat-title {
+        font-size: 0.75rem !important;
+    }
+    
+    .stat-value {
+        font-size: 1rem !important;
+        line-height: 1.2;
+    }
+    
+    .stat-desc {
+        font-size: 0.7rem !important;
+    }
+    
+    /* 卡片内容调整 */
+    .card-body {
+        padding: 0.75rem !important;
+    }
+    
+    /* 图表容器高度调整 */
+    #temp-chart {
+        height: 200px !important;
+    }
+    
+    /* 搜索栏优化 */
+    #mobileSearch {
+        position: absolute;
+        top: 60px;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        background: var(--background-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    /* 主内容区域调整 */
+    .flex-1.flex.flex-col {
+        gap: 0.5rem !important;
+    }
+    
+    /* 确保内容不会溢出 */
+    .min-h-screen {
+        min-height: 100vh;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    /* 优化滚动行为 */
+    .overflow-y-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 确保图表容器不会重叠 */
+    .lg\:col-span-3 {
+        margin-bottom: 0.5rem;
+    }
+
+    /* 状态卡片网格 */
+    .grid.grid-cols-2.lg\:grid-cols-4 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    /* 状态卡片基础样式 */
+    .stat {
+        padding: 0.75rem !important;
+        height: auto !important;
+        min-height: 100px !important;
+        background: white;
+        border: 1px solid rgba(0,0,0,0.1);
+        display: grid;
+        grid-template-areas: 
+            "icon title"
+            "value value"
+            "desc desc";
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 0.25rem;
+    }
+
+    /* 图标区域 */
+    .stat-figure {
+        grid-area: icon;
+        margin: 0;
+        padding-right: 0.5rem;
+    }
+
+    .stat-figure i {
+        font-size: 1.125rem !important;
+        opacity: 0.8;
+    }
+
+    /* 标题区域 */
+    .stat-title {
+        grid-area: title;
+        font-size: 0.75rem !important;
+        color: var(--text-secondary);
+        align-self: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 数值区域 */
+    .stat-value {
+        grid-area: value;
+        font-size: 1.25rem !important;
+        line-height: 1.2;
+        font-weight: 500;
+        padding-top: 0.25rem;
+    }
+
+    /* 描述区域 */
+    .stat-desc {
+        grid-area: desc;
+        font-size: 0.7rem !important;
+        color: var(--text-secondary);
+        opacity: 0.7;
+        padding-top: 0.25rem;
+    }
+
+    /* 确保文字不会重叠 */
+    .stat-value, .stat-desc {
+        width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* 优化移动端搜索栏动画 */
+#mobileSearch {
+    transition: all 0.3s ease-in-out;
+    max-height: 0;
+    overflow: hidden;
+    background: var(--background-color);
+}
+
+#mobileSearch.show {
+    max-height: 60px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 优化移动端字体大小 */
+@media (max-width: 768px) {
+    .text-xl {
+        font-size: 1.125rem !important;
+    }
+    
+    .text-lg {
+        font-size: 1rem !important;
+    }
+    
+    .text-sm {
+        font-size: 0.813rem !important;
+    }
+    
+    .text-xs {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* 动画效果优化 */
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 加载动画优化 */
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(77, 171, 247, 0.1);
+    border-top: 2px solid var(--loading-spinner-color);
+    border-radius: 50%;
+    animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 错误消息样式 */
+.error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 4px;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+/* 加载状态样式 */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+}
+
+.htmx-request .htmx-indicator {
+    opacity: 1;
+}
+
+/* 响应式布局调整 */
+@media (max-width: 640px) {
+    .navbar {
+        padding: 0.5rem;
+    }
+    
+    .card-body {
+        padding: var(--card-padding);
+    }
+    
+    .stats {
+        padding: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* 平板设备 */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .grid {
+        gap: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* 大屏设备 */
+@media (min-width: 1025px) {
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+}
+
+/* 通用响应式工具类 */
+.hide-on-mobile {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .hide-on-mobile {
+        display: block;
+    }
+    
+    .show-on-mobile {
+        display: none;
+    }
+}
+
+/* 移动端搜索栏动画 */
+#mobileSearch {
+    transition: all 0.3s ease-in-out;
+    max-height: 0;
+    overflow: hidden;
+}
+
+#mobileSearch.show {
+    max-height: 60px;
+    padding: 0.5rem;
+}
+
+/* 移动端按钮样式 */
+.btn-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 搜索栏样式优化 */
+.join {
+    display: flex;
+    width: 100%;
+}
+
+.join .input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.join .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* 移动端搜索栏样式 */
+@media (max-width: 768px) {
+    .navbar .gap-4 {
+        gap: 0.5rem;
+    }
+    
+    .stat {
+        padding: 0.75rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .text-2xl {
+        font-size: 1.25rem;
+    }
+    
+    .text-xl {
+        font-size: 1.125rem;
+    }
+}
+
+/* 移动端布局优化 */
+@media (max-width: 768px) {
+    /* 主容器调整 */
+    .min-h-screen {
+        padding: 0.75rem !important;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    /* 导航栏优化 */
+    .navbar {
+        height: auto !important;
+        padding: 0.5rem 0.75rem;
+        margin: -0.75rem -0.75rem 0;
+        border-radius: 0 !important;
+    }
+
+    /* 搜索栏调整 */
+    #mobileSearch {
+        margin: 0 -0.75rem;
+        background: var(--background-color);
+    }
+    
+    #mobileSearch.show {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+
+    /* 优化图表区域间距 */
+    .flex-1.grid.grid-cols-1.lg\:grid-cols-4 {
+        margin-top: 1.5rem;
+    }
+
+    /* 温度趋势图卡片 */
+    .lg\:col-span-3.card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* 移动端阴影和边框优化 */
+@media (max-width: 768px) {
+    .shadow-xl {
+        box-shadow: none !important;
+    }
+
+    .rounded-box {
+        border-radius: 8px !important;
+    }
+
+    .stat, .card {
+        border-radius: 8px !important;
+        background: white !important;
+        border: 1px solid rgba(0,0,0,0.1) !important;
+    }
+}
+
+/* 移动端背景色优化 */
+@media (max-width: 768px) {
+    :root {
+        --background-color: #f5f5f5;
+    }
+
+    body {
+        background-color: var(--background-color);
+    }
+
+    .bg-base-200 {
+        background-color: white !important;
+    }
+}
+
+/* 移动端字体和间距全局调整 */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .gap-4 {
+        gap: 0.75rem !important;
+    }
+
+    .p-4 {
+        padding: 0.75rem !important;
+    }
+
+    .m-4 {
+        margin: 0.75rem !important;
+    }
+} 
